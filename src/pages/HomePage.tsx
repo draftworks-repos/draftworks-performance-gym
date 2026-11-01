@@ -184,7 +184,7 @@ export const HomePage: React.FC<HomePageProps> = ({
             src={IMAGES.heroDeadlift}
             alt="Strength athlete gripping a heavy deadlift barbell on a wooden platform at DraftWorks"
             loading="eager"
-            className="w-full h-full object-cover object-center"
+            className="w-full h-full object-cover object-top"
           />
           {/* Controlled dark editorial scrim */}
           <div className="absolute inset-0 bg-gradient-to-t from-black via-black/25 to-black/60" />
