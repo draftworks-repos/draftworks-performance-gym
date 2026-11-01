@@ -205,7 +205,7 @@ export const ContactPage: React.FC<ContactPageProps> = ({ onOpenEnquiry }) => {
                           setPhone(e.target.value);
                           if (errors.phone) setErrors({ ...errors, phone: undefined });
                         }}
-                        placeholder="+91 98450 11223"
+                        placeholder="+91 89596 90529"
                         className={`w-full px-4 py-3 bg-black border rounded-lg text-sm text-white placeholder:text-[#5A5A5A] tabular-nums focus:outline-none ${
                           errors.phone
                             ? 'border-[#9B0A0A]'

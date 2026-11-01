@@ -70,6 +70,7 @@ export const HomePage: React.FC<HomePageProps> = ({
   onOpenLightbox,
 }) => {
   const heroTextRef = useRef<HTMLDivElement>(null);
+  const aboutStatsRef = useRef<HTMLDivElement>(null);
 
   // Viewport width for responsive horizontal carousels
   const [viewportWidth, setViewportWidth] = useState<number>(
@@ -125,6 +126,55 @@ export const HomePage: React.FC<HomePageProps> = ({
     );
   }, []);
 
+  useEffect(() => {
+    const stats = aboutStatsRef.current;
+    if (!stats || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    const counters = Array.from(stats.querySelectorAll<HTMLElement>('[data-count]'));
+    const timeline = gsap.timeline({ paused: true });
+
+    counters.forEach((counter) => {
+      const target = Number(counter.dataset.count);
+      const prefix = counter.dataset.prefix ?? '';
+      const suffix = counter.dataset.suffix ?? '';
+      const minDigits = Number(counter.dataset.minDigits ?? 1);
+      const progress = { value: 0 };
+      const formatCount = (value: number) =>
+        `${prefix}${String(Math.round(value)).padStart(minDigits, '0')}${suffix}`;
+
+      timeline.to(
+        progress,
+        {
+          value: target,
+          duration: 3,
+          ease: 'power1.out',
+          onUpdate: () => {
+            counter.textContent = formatCount(progress.value);
+          },
+          onComplete: () => {
+            counter.textContent = formatCount(target);
+          },
+        },
+        0
+      );
+    });
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) return;
+        observer.disconnect();
+        timeline.play();
+      },
+      { threshold: 0.35 }
+    );
+    observer.observe(stats);
+
+    return () => {
+      observer.disconnect();
+      timeline.kill();
+    };
+  }, []);
+
   return (
     <div>
       {/* 1. HOMEPAGE FULL-SCREEN HERO (100svh background photograph) */}
@@ -137,7 +187,6 @@ export const HomePage: React.FC<HomePageProps> = ({
             className="w-full h-full object-cover object-center"
           />
           {/* Controlled dark editorial scrim */}
-          <div className="absolute inset-0 bg-gradient-to-r from-black/92 via-black/70 to-black/35" />
           <div className="absolute inset-0 bg-gradient-to-t from-black via-black/25 to-black/60" />
         </div>
 
@@ -221,27 +270,46 @@ export const HomePage: React.FC<HomePageProps> = ({
               </p>
 
               {/* Editorial Key Facts Row (2x2 on tablet/mobile, 4 across on desktop) */}
-              <div className="pt-4 grid grid-cols-2 sm:grid-cols-4 gap-6 border-t border-black/15">
+              <div
+                ref={aboutStatsRef}
+                className="pt-4 grid grid-cols-2 sm:grid-cols-4 gap-6 border-t border-black/15"
+              >
                 <div>
-                  <p className="font-display text-3xl font-bold text-black tabular-nums">
+                  <p
+                    className="font-display text-3xl font-bold text-black tabular-nums"
+                    data-count={BRAND_INFO.branchCount}
+                    data-min-digits="2"
+                  >
                     0{BRAND_INFO.branchCount}
                   </p>
                   <p className="text-xs text-[#5A5A5A] mt-1">Branches in India</p>
                 </div>
                 <div>
-                  <p className="font-display text-3xl font-bold text-black tabular-nums">
+                  <p
+                    className="font-display text-3xl font-bold text-black tabular-nums"
+                    data-count="2019"
+                  >
                     2019
                   </p>
                   <p className="text-xs text-[#5A5A5A] mt-1">Founded in Bengaluru</p>
                 </div>
                 <div>
-                  <p className="font-display text-3xl font-bold text-[#9B0A0A] tabular-nums">
-                    ±10g
+                  <p
+                    className="font-display text-3xl font-bold text-[#9B0A0A] tabular-nums"
+                    data-count="10"
+                    data-prefix="+"
+                    data-suffix="g"
+                  >
+                    +10g
                   </p>
                   <p className="text-xs text-[#5A5A5A] mt-1">Plate Calibration</p>
                 </div>
                 <div>
-                  <p className="font-display text-3xl font-bold text-black tabular-nums">
+                  <p
+                    className="font-display text-3xl font-bold text-black tabular-nums"
+                    data-count="12"
+                    data-suffix=" Wk"
+                  >
                     12 Wk
                   </p>
                   <p className="text-xs text-[#5A5A5A] mt-1">Periodized Cycles</p>
@@ -319,7 +387,7 @@ export const HomePage: React.FC<HomePageProps> = ({
             </div>
 
             {/* Desktop & Tablet Controls (Hidden on mobile, placed below container on mobile per requirement 12) */}
-            <div className="hidden sm:flex items-center gap-3">
+            <div className="hidden sm:flex justify-end items-center gap-3 w-1/2 lg:w-auto">
               <span className="text-xs text-[#5A5A5A] tabular-nums mr-2">
                 0{safeProgramIdx + 1} / 0{maxProgramIdx + 1}
               </span>
@@ -470,58 +538,79 @@ export const HomePage: React.FC<HomePageProps> = ({
         className="bg-[#F7F7F7] text-black py-20 lg:py-28 border-t border-black/10"
       >
         <div className="max-w-[1440px] mx-auto px-5 sm:px-8 lg:px-12">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
-            {/* Left Column: Prominent Display Heading + Editorial Photograph */}
-            <div className="lg:col-span-5 space-y-6">
-              <p className="text-xs font-semibold text-[#9B0A0A] tracking-wide">
+
+          {/* Section Header */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-end mb-16">
+            <div className="lg:col-span-7">
+              <p className="text-xs font-semibold text-[#9B0A0A] tracking-wide mb-6">
                 03. Why DraftWorks
               </p>
+
               <h2
                 id="why-us-heading"
-                className={`${styles.sectionHeading} text-4xl sm:text-5xl text-black`}
+                className={`${styles.sectionHeading} text-4xl sm:text-5xl text-black max-w-3xl`}
               >
-                Engineered For <span className="text-[#9B0A0A]">Measurable Output</span>, Not
-                Crowded Floors.
+                Built Around <span className="text-[#9B0A0A]">Strength.</span>
+                <br />
+                Not Membership Numbers.
               </h2>
-              <p className="text-base text-black/75 leading-relaxed">
-                Most commercial gyms optimize for membership volume, filling their floors with
-                selectorized machines and mirrors. We strip away the noise so every square foot
-                serves barbell progression.
-              </p>
-
-              <div className="rounded-xl overflow-hidden aspect-[4/3] bg-black mt-4">
-                <ResilientImage
-                  src={IMAGES.athleteSquat}
-                  alt="Strength athlete bracing under a heavy squat bar at DraftWorks"
-                  className="w-full h-full object-cover"
-                />
-              </div>
             </div>
 
-            {/* Right Column: Editorial Hairline Manifesto List (No cards) */}
-            <div className="lg:col-span-7 lg:pl-6 divide-y divide-black/15 border-t border-b border-black/15">
-              {WHY_US_POINTS.map((point) => (
-                <div
-                  key={point.index}
-                  className="py-7 sm:py-8 grid grid-cols-1 sm:grid-cols-12 gap-3 sm:gap-6 items-baseline"
-                >
-                  <span className="sm:col-span-2 font-display text-2xl sm:text-3xl font-bold text-[#9B0A0A] tabular-nums">
-                    {point.index}
-                  </span>
-                  <div className="sm:col-span-10 space-y-2">
-                    <h3 className="font-display text-2xl uppercase tracking-tight text-black">
-                      {point.title}
-                    </h3>
-                    <p className="text-sm sm:text-base text-black/75 leading-relaxed max-w-xl">
-                      {point.description}
-                    </p>
-                  </div>
-                </div>
-              ))}
+            <div className="lg:col-span-5 lg:pb-2">
+              <p className="text-base text-black/75 leading-relaxed max-w-lg">
+                Every decision on our floor has a purpose. From equipment selection
+                to training space, we prioritize the things that actually move
+                your performance forward.
+              </p>
             </div>
           </div>
+
+          {/* Training Principles */}
+          <div className="grid gap-x-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 border-t border-black/20 border-b border-black/20">
+            {WHY_US_POINTS.map((point, idx) => (
+              <div
+                key={point.index}
+                className={`py-8 lg:py-10 pr-6 ${
+                  idx !== 3 ? 'lg:border-r border-black/15' : ''
+                } ${
+                  idx % 2 === 0 ? 'sm:border-r border-black/15' : ''
+                } lg:pl-7 first:lg:pl-0`}
+              >
+                <div className="flex items-center justify-between mb-12">
+                  <span className="font-display text-3xl font-bold text-[#9B0A0A] tabular-nums">
+                    {point.index}
+                  </span>
+                  <span className="text-xs text-black/40 tracking-widest">
+                    / 04
+                  </span>
+                </div>
+
+                <h3 className="font-display text-2xl uppercase tracking-tight text-black mb-3">
+                  {point.title}
+                </h3>
+
+                <p className="text-sm sm:text-base text-black/65 leading-relaxed">
+                  {point.description}
+                </p>
+              </div>
+            ))}
+          </div>
+
+          {/* Visual Statement */}
+          <div className="relative mt-10 min-h-[300px] sm:min-h-[380px] lg:min-h-[460px] overflow-hidden bg-black">
+            <ResilientImage
+              src={IMAGES.athleteSquat}
+              alt="Athlete preparing for a heavy squat"
+              className="absolute inset-0 w-full h-full object-cover object-center"
+            />
+
+            <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/45 to-transparent" />
+
+          </div>
+
         </div>
       </section>
+
 
       {/* 5. BEFORE & AFTER TRANSFORMATION SECTION (Draggable Centre Divider) */}
       <BeforeAfterSection />
@@ -691,7 +780,7 @@ export const HomePage: React.FC<HomePageProps> = ({
             </div>
 
             {/* Desktop & Tablet Controls */}
-            <div className="hidden sm:flex items-center gap-3">
+            <div className="hidden sm:flex justify-end items-center gap-3 w-1/2 lg:w-auto">
               <span className="text-xs text-[#5A5A5A] tabular-nums mr-2">
                 0{safeBranchIdx + 1} / 0{maxBranchIdx + 1}
               </span>

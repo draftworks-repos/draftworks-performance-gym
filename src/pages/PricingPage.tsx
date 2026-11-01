@@ -134,7 +134,7 @@ export const PricingPage: React.FC<PricingPageProps> = ({ onOpenEnquiry }) => {
                           : 'bg-black hover:bg-[#9B0A0A] text-white'
                       }`}
                     >
-                      <span>Enquire For {tier.name}</span>
+                      <span>Enquire Now</span>
                       <ArrowRight className="w-4 h-4" />
                     </button>
                   </div>
