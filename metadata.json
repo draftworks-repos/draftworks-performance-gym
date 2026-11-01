@@ -1,0 +1,6 @@
+{
+  "name": "DraftWorks — Strength & Performance Club",
+  "description": "Editorial strength-training club in India built around calibrated equipment, periodized barbell programming, and disciplined coaching.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
